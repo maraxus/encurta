@@ -1,0 +1,16 @@
+
+
+Url's curtas
+
+ - Uma URL curta deveria ser algum registro de de uma URL fornecida ao programa, e de um código identificador mais curto. Essa informação deve ser persistente, assim o link fornecido com o novo código estaria disponível por
+vários dias. Quando a aplicação for chamada com o código identificador válido na url, o sitema deveria ser capaz de redirecionar o usuário para a URL correspondente ao código. É essencial um método que cria a URL encurtada,
+devolvendo o código de identificação. E outro método que lê o código e devolve a URL completa.
+ - O código de indentificação ou URL encurtada, deve possuir no maximo 4 caractéres, cada caractere podendo ser um dígito de 0 á 9, ou letras de a á Z, maiúsculas e minúsculas, totalizando 62 possibilidades de combinação para
+cada caractére e 14.776.336 de combinações no total.
+ - O código de indentificação ou URL encurtada, deve começar com um caráctere e adicionar outros conforme for necessário, até o máximo de quatro.
+ - Uma vez chegando ao fim de todas as combinações possíveis, o identificador seria reiniciado, e os links antigos expirariam do mais antigo para o mais recente conforme novas URLs fossem adiconadas.
+
+def clean_url(raw_url)
+      clean_url = raw_url.strip
+      clean_url = "http://" + clean_url if clean_url[0..6] != "http://"
+    end
