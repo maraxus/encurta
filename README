@@ -10,7 +10,3 @@ cada caractére e 14.776.336 de combinações no total.
  - O código de indentificação ou URL encurtada, deve começar com um caráctere e adicionar outros conforme for necessário, até o máximo de quatro.
  - Uma vez chegando ao fim de todas as combinações possíveis, o identificador seria reiniciado, e os links antigos expirariam do mais antigo para o mais recente conforme novas URLs fossem adiconadas.
 
-def clean_url(raw_url)
-      clean_url = raw_url.strip
-      clean_url = "http://" + clean_url if clean_url[0..6] != "http://"
-    end
