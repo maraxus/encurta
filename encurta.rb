@@ -9,12 +9,15 @@ class ShortUrl
 SHORT_URL_CHARACTERS_RANGE = %{ 0 1 2 4 5 6 7 8 9 0 a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z} #This constant describes the character range of the characters that for the short_url code.   
 attr_reader :url, :short_url, :generate_short_url
   
-  def initialize(raw_url)
+  def initialize(raw_url,url = 'a')
     @url       = raw_url
-    @short_url = "a"
+    @short_url = url
   end
   def to_json(*a)
-    {"json_class" => self.class.name, "data" => {"string" => @url, "string" => @short_url }}.to_json(*a)
+    {"json_class" => self.class.name, "data" => {"url" => @url, "short_url" => @short_url }}.to_json(*a)
+  end
+  def self.json_create(o)
+    new(o["data"]["url"], o["data"]["short_url"])
   end
   def clean_url(raw_url)     #This method strip whitespaces and add the http prefix to the url if it's missing.
     clean_url = raw_url.strip
@@ -37,3 +40,5 @@ s = ShortUrl.new("http://foo.bar")
 puts s.inspect
 t = s.to_json
 puts t
+u = JSON.parse t
+puts u.inspect
