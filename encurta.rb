@@ -26,11 +26,22 @@ attr_reader :url, :short_url, :generate_short_url
   end
   def generate_short_url
     urldb = Redis.new
-     urldb.set("url_list", '{"json_class":"ShortUrl","data":{"url":"http://foo.bar","short_url":"a"}}') if urldb.dbsize == 0
-     list = JSON.parse(urldb.get("url_list"))
-     puts list.inspect
+    list =  Array.new
+    urldb.set("url_list", '{"json_class":"ShortUrl","data":{"url":"http://foo.bar","short_url":"a"}}') if urldb.get("url_list") == nil    
+    list << JSON.parse(urldb.get("url_list"))
+    last_short_url = list.pop
+    last_short_code = last_short_url.short_url
+    list.push last_short_url
+    puts last_short_code
+    puts list.inspect
+  end
+  def remove
+    urldb = Redis.new
+    urldb.del "url_list"
+    puts urldb.dbsize
   end
 end
 
 s = ShortUrl.new("http://foo.bar")
 s.generate_short_url
+#s.remove
