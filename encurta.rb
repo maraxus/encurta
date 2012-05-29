@@ -26,19 +26,11 @@ attr_reader :url, :short_url, :generate_short_url
   end
   def generate_short_url
     urldb = Redis.new
-    
-    if urldb.dbsize == 0
-      urldb.set("url_list", "first") #'SET' requires two arguments ever, 'first' is a meaningless piece of data
-    else
-      list = JSON.parse(urldb.get("url_list"))
-    end
-    list.inspect
+     urldb.set("url_list", '{"json_class":"ShortUrl","data":{"url":"http://foo.bar","short_url":"a"}}') if urldb.dbsize == 0
+     list = JSON.parse(urldb.get("url_list"))
+     puts list.inspect
   end
 end
 
 s = ShortUrl.new("http://foo.bar")
-puts s.inspect
-t = s.to_json
-puts t
-u = JSON.parse t
-puts u.inspect
+s.generate_short_url
