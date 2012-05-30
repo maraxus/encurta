@@ -29,9 +29,10 @@ attr_reader :url, :short_url, :generate_short_url
     list =  Array.new
     next_character = Array.new
     new_short_url = String.new
-    urldb.set("url_list", '{"json_class":"ShortUrl","data":{"url":"http://foo.bar","short_url":"0"}}') if urldb.get("url_list") == nil    
+    urldb.rpush("url_list", {"json_class"=>"ShortUrl","data"=>{"url"=>"http://foo.bar","short_url"=>"0"}}.to_json.gsub!(%r[\"],"\"")) if urldb.llen "url_list" == 0
     list << JSON.parse(urldb.get("url_list"))
     last_short_url = list.pop
+    puts last_short_url.inspect
     last_short_code = last_short_url.short_url
     list.push last_short_url
     last_short_code.each_char do |c|
@@ -53,13 +54,13 @@ attr_reader :url, :short_url, :generate_short_url
 end
 
 s = ShortUrl.new("http://foo.bar")
-t = {"json_class"=>"ShortUrl","data"=> {"url"=>"http://foo.bar","short_url"=>"0"}}.to_json
+t = "{\"json_class\":\"ShortUrl\",\"data\": {\"url\":\"http://foo.bar\",\"short_url\":\"0\"}}"
 puts t
 u = JSON.parse(t)
-v = s.to_json
-puts v
-v = JSON.parse(v)
-puts v
-puts u.inspect
+#v = s.to_json.gsub!(%r[\"],"\\\"")
+#puts v
+#v = JSON.parse(v)
+#puts u.inspect
+#puts v.inspect
 s.generate_short_url
 #s.remove
