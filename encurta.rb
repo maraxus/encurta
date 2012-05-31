@@ -10,7 +10,7 @@ SHORT_URL_CHARACTERS_RANGE = %w{ 0 1 2 4 5 6 7 8 9 0 a b c d e f g h i j k l m n
 attr_reader :url, :short_url, :generate_short_url
   
   def initialize(raw_url,url = '0')
-    @url       = raw_url
+    @url       = clean_url(raw_url)
     @short_url = url
   end
   def to_json(*a)
@@ -36,17 +36,20 @@ attr_reader :url, :short_url, :generate_short_url
     urldb.rpush("url_list", last_short_url.to_json.gsub!(%r[\"],"\""))
     puts "last short url: " + last_short_url.inspect
     last_short_code = last_short_url.short_url
-    last_short_code.each_char do |c|
-      next_c = SHORT_URL_CHARACTERS_RANGE.index(c)
-      next_c += 1
-      next_character = SHORT_URL_CHARACTERS_RANGE.at(next_c)
+    
+    next_c = SHORT_URL_CHARACTERS_RANGE.index last_short_code.slice(%r[\w$])
+    next_c += 1
+    next_character = SHORT_URL_CHARACTERS_RANGE.at(next_c)
+    if next_character.nil?
+      new_short_url = last_short_code << "0"
+      if new_short_url.length > 4
+        new_short_url = '0'
+        urldb.del "url_counter"
+        urldb.incr "url_counter"
+      end
     end
-    new_short_url = last_short_code << "0" if next_character.nil?
-    if new_short_url.length > 4
-      new_short_url = '0'
-      urldb.del "url_counter"
-      urldb.incr "url_counter"
-    end
+    new_short_url = last_short_code.gsub %r[\w$], next_character
+    puts new_short_url
   end
   def remove
     urldb = Redis.new
