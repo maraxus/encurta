@@ -14,7 +14,7 @@ attr_reader :url, :short_url, :generate_short_url
     @short_url = url
   end
   def to_json(*a)
-    {"json_class" => self.class.name, "data" => {"url" => @url, "short_url" => @short_url }}.to_json(*a)
+    {"json_class" => self.class.name, "data" => {"url" => @url, "short_url" => @short_url }}.to_json(*a).gsub!(%r[\"],"\"")
   end
   def self.json_create(o)
     new(o["data"]["url"], o["data"]["short_url"])
@@ -28,34 +28,41 @@ attr_reader :url, :short_url, :generate_short_url
     urldb = Redis.new
     next_character = Array.new
     new_short_url = String.new
-    if urldb.llen "url_list" == 0
+    puts urldb.llen("url_list")
+    if urldb.llen("url_list") == 0
       urldb.rpush("url_list", {"json_class"=>"ShortUrl","data"=>{"url"=>"http://foo.bar","short_url"=>"0"}}.to_json.gsub!(%r[\"],"\""))
-      urldb.incr("url_counter")
     end
     last_short_url = JSON.parse(urldb.rpop("url_list"))
-    urldb.rpush("url_list", last_short_url.to_json.gsub!(%r[\"],"\""))
+    urldb.rpush("url_list", last_short_url.to_json)
     puts "last short url: " + last_short_url.inspect
     last_short_code = last_short_url.short_url
     
     next_c = SHORT_URL_CHARACTERS_RANGE.index last_short_code.slice(%r[\w$])
+    puts next_c
     next_c += 1
     next_character = SHORT_URL_CHARACTERS_RANGE.at(next_c)
     if next_character.nil?
       new_short_url = last_short_code << "0"
       if new_short_url.length > 4
         new_short_url = '0'
-        urldb.del "url_counter"
-        urldb.incr "url_counter"
       end
     end
     new_short_url = last_short_code.gsub %r[\w$], next_character
-    puts new_short_url
+    puts new_short_url + " nova url"
+    return new_short_url
+  end
+  def save
+    urldb = Redis.new
+    @short_url = generate_short_url
+    urldb.rpush "url_list", self.to_json
+    puts "regiters: "
+    puts urldb.llen("url_list")
   end
   def remove
     urldb = Redis.new
     urldb.del "url_list"
     urldb.del "url_counter"
-    puts urldb.dbsize
+    return urldb.dbsize
   end
 end
 
@@ -68,5 +75,5 @@ u = JSON.parse(t)
 #v = JSON.parse(v)
 #puts u.inspect
 #puts v.inspect
-s.generate_short_url
+s.save
 #s.remove
